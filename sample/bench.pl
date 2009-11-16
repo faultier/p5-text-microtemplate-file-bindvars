@@ -15,14 +15,14 @@ my $count = shift @ARGV || 1000;
 my $cache = shift @ARGV || 0;
 my $wrapper = shift @ARGV || 0;
 
-my %vars = (
+my $vars = {
     name      => 'faultier',
     age       => 24,
     favorites => {
         languages => [ 'Ruby',      'Perl',      'Objective-C' ],
         foods     => [ 'うどん', 'うどん', 'うどん', '裂けるチーズ' ],
     },
-);
+};
 
 my $mt = undef;
 
@@ -34,7 +34,7 @@ sub mt {
     else {
         $mt = Text::MicroTemplate::File->new(%args);
     }
-    my $result = $mt->render_file( $wrapper ? 'wrapped.mt' : 'test.mt', %vars )->as_string;
+    my $result = $mt->render_file( $wrapper ? 'wrapped.mt' : 'test.mt', $vars )->as_string;
     warn $result if $count == 1;
 }
 
@@ -48,7 +48,7 @@ sub mtb {
     else {
         $mtb = Text::MicroTemplate::File::BindVars->new(%args);
     }
-    my $result = $mtb->render_file( $wrapper ? 'wrapped.mtb' : 'test.mtb', %vars )->as_string;
+    my $result = $mtb->render_file( $wrapper ? 'wrapped.mtb' : 'test.mtb', $vars )->as_string;
     warn $result if $count == 1;
 }
 
@@ -62,7 +62,7 @@ sub tt {
     else {
         $tt = Template->new( \%args );
     }
-    $tt->process( $wrapper ? 'wrapper.tt' : 'test.tt', \%vars, \my $out ) or die $tt->error() . "\n";
+    $tt->process( $wrapper ? 'wrapped.tt' : 'test.tt', $vars, \my $out ) or die $tt->error() . "\n";
     warn $out if $count == 1;
 }
 

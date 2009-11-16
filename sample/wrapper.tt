@@ -4,7 +4,7 @@
         <title>ベンチマーク</title>
     </head>
     <body>
-    [% INCLUDE 'wrapped.tt' %]
+    [% content %]
     </body>
 </html>
 

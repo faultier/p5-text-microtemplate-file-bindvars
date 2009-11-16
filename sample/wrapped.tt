@@ -1,3 +1,4 @@
+[% WRAPPER wrapper.tt %]
 <h1>[% name | html %]について</h1>
 <h2>名前</h2>
 <div>[% name | html %]</div>
@@ -15,3 +16,4 @@
 <li>[% food | html %]</li>
 [% END %]
 </ul>
+[% END %]
