@@ -9,10 +9,11 @@ use lib "$Bin/../lib";
 use Benchmark qw(timethese cmpthese);
 use Text::MicroTemplate::File;
 use Text::MicroTemplate::File::BindVars;
+use Text::MicroTemplate::Extended;
 use Template;
 
-my $count = shift @ARGV || 1000;
-my $cache = shift @ARGV || 0;
+my $count   = shift @ARGV || 1000;
+my $cache   = shift @ARGV || 0;
 my $wrapper = shift @ARGV || 0;
 
 my $vars = {
@@ -24,32 +25,51 @@ my $vars = {
     },
 };
 
+my $file = $wrapper ? 'wrapped' : 'test';
+
 my $mt = undef;
 
 sub mt {
-    my %args = ( use_cache => $cache, include_path => $Bin );
+    my %args = ( use_cache => $cache, include_path => [$Bin] );
     if ($cache) {
         $mt ||= Text::MicroTemplate::File->new(%args);
     }
     else {
         $mt = Text::MicroTemplate::File->new(%args);
     }
-    my $result = $mt->render_file( $wrapper ? 'wrapped.mt' : 'test.mt', $vars )->as_string;
-    warn $result if $count == 1;
+    $mt->render_file( $file . '.mt', $vars )->as_string;
 }
 
 my $mtb = undef;
 
 sub mtb {
-    my %args = ( use_cache => $cache, include_path => $Bin );
+    my %args = ( use_cache => $cache, include_path => [$Bin] );
     if ($cache) {
         $mtb ||= Text::MicroTemplate::File::BindVars->new(%args);
     }
     else {
         $mtb = Text::MicroTemplate::File::BindVars->new(%args);
     }
-    my $result = $mtb->render_file( $wrapper ? 'wrapped.mtb' : 'test.mtb', $vars )->as_string;
-    warn $result if $count == 1;
+    $mtb->render_file( $file . '.mtb', $vars )->as_string;
+}
+
+my $mte = undef;
+
+# entends使ったときの動作がいまいち上手く行かない…
+sub mte {
+    my %args = (
+        use_cache     => $cache,
+        include_path  => [$Bin],
+        template_args => $vars,
+        extension     => '.mte'
+    );
+    if ($cache) {
+        $mte ||= Text::MicroTemplate::Extended->new(%args);
+    }
+    else {
+        $mte = Text::MicroTemplate::Extended->new(%args);
+    }
+    $mte->render($file)->as_string;
 }
 
 my $tt = undef;
@@ -62,8 +82,7 @@ sub tt {
     else {
         $tt = Template->new( \%args );
     }
-    $tt->process( $wrapper ? 'wrapped.tt' : 'test.tt', $vars, \my $out ) or die $tt->error() . "\n";
-    warn $out if $count == 1;
+    $tt->process( "$file.tt", $vars, \my $out ) or die $tt->error() . "\n";
 }
 
 my $comp = timethese(
@@ -71,6 +90,7 @@ my $comp = timethese(
     {
         'T::MT::F'     => \&mt,
         'T::MT::F::BV' => \&mtb,
+        'T::MT::E'     => \&mte,
         'TT'           => \&tt,
     }
 );
