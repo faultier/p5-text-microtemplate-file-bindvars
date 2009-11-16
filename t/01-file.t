@@ -7,7 +7,7 @@ use Text::MicroTemplate::File::BindVars;
 
 # simple test
 do {
-    my $mtb = Text::MicroTemplate::File::BindVars->new( include_path => 't/tmpl' );
+    my $mtb = Text::MicroTemplate::File::BindVars->new( include_path => 't/templates' );
     is $mtb->render_file( 'hello.mt', { name => 'Taro' } )->as_string, "Hello, Taro\n", "bind";
     is $mtb->render_file( 'hello_nobind.mt', 'Taro' )->as_string, "Hello, Taro\n", "no bind";    # no bind
     is $mtb->render_file( 'include.mt', { name => 'Taro' } )->as_string,
@@ -23,7 +23,7 @@ do {
 # package name
 do {
     my $mtb = Text::MicroTemplate::File::BindVars->new(
-        include_path => 't/tmpl',
+        include_path => 't/templates',
         package_name => 'foo',
     );
     is $mtb->render_file( 'hello.mt', { name => 'Taro' } )->as_string, "Hello, Taro\n";
@@ -63,7 +63,7 @@ do {
 # open_layer (default=:utf8)
 do {
     use utf8;
-    my $mtf = Text::MicroTemplate::File::BindVars->new( include_path => 't/tmpl', );
+    my $mtf = Text::MicroTemplate::File::BindVars->new( include_path => 't/templates', );
 
     my $output = $mtf->render_file( 'konnitiwa.mt', { target => '他界' } )->as_string;
     is $output, "こんにちは、他界\n", 'utf8 flagged render ok';
@@ -73,7 +73,7 @@ do {
 do {
     no utf8;
     my $mtf = Text::MicroTemplate::File::BindVars->new(
-        include_path => 't/tmpl',
+        include_path => 't/templates',
         open_layer   => '',
     );
 

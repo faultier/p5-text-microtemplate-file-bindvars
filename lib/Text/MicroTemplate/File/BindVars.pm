@@ -5,16 +5,6 @@ use strict;
 use base qw(Text::MicroTemplate::File);
 use Carp qw(croak);
 
-=head1 NAME
-
-Text::MicroTemplate::File::BindVars - The great new Text::MicroTemplate::File::BindVars!
-
-=head1 VERSION
-
-Version 0.01
-
-=cut
-
 our $VERSION = '0.01';
 
 sub build_file {
@@ -42,9 +32,7 @@ sub build_file {
             close $fh;
             $self->parse($src);
             my $setter = 'my $_mt = shift;';
-            foreach my $var (@vars) {
-                $setter .= "my \$$var = shift;";
-            }
+            $setter .= join( '', map { "my \$$_ = shift;" } @vars );
             local $Text::MicroTemplate::_mt_setter = $setter;
             my $f = $self->build();
             $self->{cache}->{$cache_key} = [ $st[9], $f, ] if $self->{use_cache};
@@ -58,25 +46,38 @@ sub render_file {
     my $self = shift;
     my $file = shift;
     my $partial;
+
     if ( ref( $_[0] ) eq 'Text::MicroTemplate::EncodedString' ) {
         $partial = shift;
     }
+
     if ( ref( $_[0] ) eq 'HASH' ) {
-        my %bind_params = %{ $_[0] };
-        $bind_params{partial} = $partial if $partial;
-        $self->build_file( $file, keys %bind_params )->( $self, values %bind_params );
+        my $bind_params = $_[0];
+        $bind_params->{partial} = $partial if $partial;
+        $self->build_file( $file, keys %$bind_params )->( $self, values %$bind_params );
     }
-    elsif ( $partial && !@_ ) {
+    elsif ($partial) {
         $self->build_file( $file, 'partial' )->( $self, $partial );
     }
     else {
-        $self->build_file($file)->( $self, @_ );
+        $self->build_file( $file )->( $self, @_);
     }
 }
 
 1;
 
 __END__
+
+=head1 NAME
+
+Text::MicroTemplate::File::BindVars - The great new Text::MicroTemplate::File::BindVars!
+
+=head1 VERSION
+
+Version 0.01
+
+=cut
+
 
 =head1 SYNOPSIS
 
@@ -86,8 +87,9 @@ Perhaps a little code snippet.
 
     use Text::MicroTemplate::File::BindVars;
 
-    my $foo = Text::MicroTemplate::File::BindVars->new();
-    ...
+    my $mtb  = Text::MicroTemplate::File::BindVars->new();
+    my $html = $mtb->render_file('hello.mt', { foo => 'bar' })->as_string;
+
 
 =head1 EXPORT
 
@@ -100,15 +102,9 @@ if you don't export anything, such as for a purely object-oriented module.
 
 =cut
 
-sub build_file {
-}
-
 =head2 render_file
 
 =cut
-
-sub render_file {
-}
 
 =head1 AUTHOR
 

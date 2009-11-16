@@ -55,7 +55,6 @@ sub mtb {
 
 my $mte = undef;
 
-# entends使ったときの動作がいまいち上手く行かない…
 sub mte {
     my %args = (
         use_cache     => $cache,
@@ -85,13 +84,13 @@ sub tt {
     $tt->process( "$file.tt", $vars, \my $out ) or die $tt->error() . "\n";
 }
 
-my $comp = timethese(
-    $count,
-    {
-        'T::MT::F'     => \&mt,
-        'T::MT::F::BV' => \&mtb,
-        'T::MT::E'     => \&mte,
-        'TT'           => \&tt,
-    }
-);
+my $targets = {
+    'T::MT::F'     => \&mt,
+    'T::MT::F::BV' => \&mtb,
+    'TT'           => \&tt,
+};
+$targets->{'T::MT::E'} = \&mte
+  unless $wrapper;    # entends使ったときの動作がいまいち上手く行かない…
+
+my $comp = timethese( $count, $targets );
 cmpthese $comp;
